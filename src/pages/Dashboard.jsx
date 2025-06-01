@@ -257,7 +257,9 @@ const Dashboard = () => {
             <hr />
             <div
               className={`menu-item ${activeTab === 'checklist' ? 'active' : ''}`}
-              onClick={() => setActiveTab('checklist')}
+              onClick={() => {
+                window.location.href = "/"
+              }}
               >
               Logout
             </div>
