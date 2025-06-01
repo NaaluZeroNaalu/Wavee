@@ -3,6 +3,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Search, Bell, User, ChevronRight, ChevronLeft } from 'lucide-react';
 import bg from "../images/bg.jpg"
 import ProgressStepUI from './ProgressStepsUI';
+import NCR from './NCR';
+import Checklist from './Checklist';
 
 const Dashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -13,7 +15,7 @@ const Dashboard = () => {
       case 'dashboard':
         return( 
         <>
-        <h1 className=''>DASHBOARD</h1>
+        <h1 className='' >DASHBOARD</h1>
         <input type="text" placeholder='Type here to Search' className='form-control'/>
         <hr />
         <div className="row gy-4 ">
@@ -32,7 +34,8 @@ const Dashboard = () => {
                 <div className="card-body">
                     <h5 className="card-title">Project Name</h5>
                     <a
-                    href="/path-to-your-file.pdf"
+                    href="#"
+
                     download
                     className="btn w-100"
                     style={{
@@ -59,7 +62,7 @@ const Dashboard = () => {
                 <div className="card-body">
                     <h5 className="card-title">Project Name</h5>
                     <a
-                    href="/path-to-your-file.pdf"
+                    href="#"
                     download
                     className="btn w-100"
                     style={{
@@ -86,7 +89,7 @@ const Dashboard = () => {
                 <div className="card-body">
                     <h5 className="card-title">Project Name</h5>
                     <a
-                    href="/path-to-your-file.pdf"
+                    href="#"
                     download
                     className="btn w-100"
                     style={{
@@ -113,7 +116,7 @@ const Dashboard = () => {
                 <div className="card-body">
                     <h5 className="card-title">Project Name</h5>
                     <a
-                    href="/path-to-your-file.pdf"
+                    href="#"
                     download
                     className="btn w-100"
                     style={{
@@ -140,7 +143,7 @@ const Dashboard = () => {
                 <div className="card-body">
                     <h5 className="card-title">Project Name</h5>
                     <a
-                    href="/path-to-your-file.pdf"
+                    href="#"
                     download
                     className="btn w-100"
                     style={{
@@ -162,14 +165,14 @@ const Dashboard = () => {
         return (
           <>
           <h1>NCR Report</h1>
-          <ProgressStepUI />
+          <NCR />
           </>
         );
         case 'checklist':
           return(
             <>
             <h1>Check List</h1>
-          <ProgressStepUI />
+          <Checklist />
           </>
         );
       default:
@@ -254,9 +257,15 @@ const Dashboard = () => {
               >
               Check List
             </div>
+            <div
+              className={`menu-item ${activeTab === 'others' ? 'active' : ''}`}
+              onClick={() => setActiveTab('checklist')}
+              >
+              Others
+            </div>
             <hr />
             <div
-              className={`menu-item ${activeTab === 'checklist' ? 'active' : ''}`}
+              className={`menu-item ${activeTab === 'logout' ? 'active' : ''}`}
               onClick={() => {
                 window.location.href = "/"
               }}

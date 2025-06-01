@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ProgressStepUI = () => {
+const Checklist = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     project: '',
@@ -65,13 +65,13 @@ const ProgressStepUI = () => {
             <p className="text-muted mb-4">Select or enter the project you are configuring</p>
             <div className="row justify-content-center">
               <div className="col-md-6">
-                <input
-                  type="text"
-                  className="form-control form-control-lg"
-                  value={formData.project}
-                  onChange={(e) => handleDateChange('project', e.target.value)}
-                  placeholder="Enter project name"
-                />
+                <select className='form-control' name="" id="" onChange={(e) => handleDateChange('project', e.target.value)}>
+                    <option value="Project1">Project1</option>
+                    <option value="Project2">Project2</option>
+                    <option value="Project3">Project3</option>
+                    <option value="Project4">Project4</option>
+                    <option value="Project5">Project5</option>
+                </select>
               </div>
             </div>
           </div>
@@ -189,6 +189,11 @@ const ProgressStepUI = () => {
                   </div>
                 </div>
               </div>
+                <button className='btn' style={{
+                        background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+                    }} onClick={()=>{
+                        alert("Downloaded")
+                    }}>Download</button>
             </div>
           </div>
         );
@@ -331,4 +336,4 @@ const ProgressStepUI = () => {
   );
 };
 
-export default ProgressStepUI;
+export default Checklist;
