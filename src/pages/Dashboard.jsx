@@ -5,6 +5,8 @@ import bg from "../images/bg.jpg"
 import ProgressStepUI from './ProgressStepsUI';
 import NCR from './NCR';
 import Checklist from './Checklist';
+import ParticleCircle from './test';
+import HistoryPage from './History';
 
 const Dashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -15,166 +17,19 @@ const Dashboard = () => {
       case 'dashboard':
         return( 
         <>
-        <h1 className='' >DASHBOARD</h1>
-        <input type="text" placeholder='Type here to Search' className='form-control'/>
-        <hr />
-        <div className="row gy-4 ">
-            <div className="col-lg-3">
-                <div className="card" style={{ width: '18rem' }}>
-                {/* Product Image */}
-                <img
-                    src={bg}
-                    className="card-img-top"
-                    alt="Product"
-                    height={200}
-
-                />
-
-                {/* Card Content */}
-                <div className="card-body">
-                    <h5 className="card-title">Project Name</h5>
-                    <a
-                    href="#"
-
-                    download
-                    className="btn w-100"
-                    style={{
-                        background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-                    }}
-                    >
-                    Download 
-                    </a>
-                </div>
-                </div>
-            </div>
-            <div className="col-lg-3">
-                <div className="card" style={{ width: '18rem' }}>
-                {/* Product Image */}
-                <img
-                    src={bg}
-                    className="card-img-top"
-                    alt="Product"
-                    height={200}
-
-                />
-
-                {/* Card Content */}
-                <div className="card-body">
-                    <h5 className="card-title">Project Name</h5>
-                    <a
-                    href="#"
-                    download
-                    className="btn w-100"
-                    style={{
-                        background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-                    }}
-                    >
-                    Download 
-                    </a>
-                </div>
-                </div>
-            </div>
-            <div className="col-lg-3">
-                <div className="card" style={{ width: '18rem' }}>
-                {/* Product Image */}
-                <img
-                    src={bg}
-                    className="card-img-top"
-                    alt="Product"
-                    height={200}
-
-                />
-
-                {/* Card Content */}
-                <div className="card-body">
-                    <h5 className="card-title">Project Name</h5>
-                    <a
-                    href="#"
-                    download
-                    className="btn w-100"
-                    style={{
-                        background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-                    }}
-                    >
-                    Download 
-                    </a>
-                </div>
-                </div>
-            </div>
-            <div className="col-lg-3">
-                <div className="card" style={{ width: '18rem' }}>
-                {/* Product Image */}
-                <img
-                    src={bg}
-                    className="card-img-top"
-                    alt="Product"
-                    height={200}
-
-                />
-
-                {/* Card Content */}
-                <div className="card-body">
-                    <h5 className="card-title">Project Name</h5>
-                    <a
-                    href="#"
-                    download
-                    className="btn w-100"
-                    style={{
-                        background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-                    }}
-                    >
-                    Download 
-                    </a>
-                </div>
-                </div>
-            </div>
-            <div className="col-lg-3">
-                <div className="card" style={{ width: '18rem' }}>
-                {/* Product Image */}
-                <img
-                    src={bg}
-                    className="card-img-top"
-                    alt="Product"
-                    height={200}
-
-                />
-
-                {/* Card Content */}
-                <div className="card-body">
-                    <h5 className="card-title">Project Name</h5>
-                    <a
-                    href="#"
-                    download
-                    className="btn w-100"
-                    style={{
-                        background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-                    }}
-                    >
-                    Download 
-                    </a>
-                </div>
-                </div>
-            </div>
-            
-        </div>
- 
+        <h1 className='' >Speak</h1>
+       <ParticleCircle />
         </>
         
         );
       case 'ncr':
         return (
           <>
-          <h1>NCR Report</h1>
-          <NCR />
+          <h1>History</h1>
+         <HistoryPage />
           </>
         );
-        case 'checklist':
-          return(
-            <>
-            <h1>Check List</h1>
-          <Checklist />
-          </>
-        );
+      
       default:
         return null;
     }
@@ -242,20 +97,14 @@ const Dashboard = () => {
               className={`menu-item ${activeTab === 'dashboard' ? 'active' : ''}`}
               onClick={() => setActiveTab('dashboard')}
               >
-              Dashboard
+              AI
              
             </div>
             <div
               className={`menu-item ${activeTab === 'ncr' ? 'active' : ''}`}
               onClick={() => setActiveTab('ncr')}
               >
-              NCR Report
-            </div>
-            <div
-              className={`menu-item ${activeTab === 'checklist' ? 'active' : ''}`}
-              onClick={() => setActiveTab('checklist')}
-              >
-              Check List
+              History
             </div>
             <div
               className={`menu-item ${activeTab === 'others' ? 'active' : ''}`}
