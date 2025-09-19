@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Play, Square, RotateCcw, Mic, MicOff } from 'lucide-react';
+import { Play, Square, RotateCcw, Mic, MicOff, X, FileText, User, Calendar, Clock, CheckCircle } from 'lucide-react';
+import { GoogleGenAI } from '@google/genai';
 
 const ParticleCircle = () => {
   const canvasRef = useRef(null);
@@ -8,12 +9,32 @@ const ParticleCircle = () => {
   const [audioLevel, setAudioLevel] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('Click start to begin speech recognition...');
+  const [cumulativeTranscript, setCumulativeTranscript] = useState('');
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
   const recognitionRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const frequencyDataRef = useRef(null);
   const speechActivityRef = useRef(0);
   const particleModeRef = useRef('circle');
+  const [message, setMessage] = useState('')
+
+  const ai = new GoogleGenAI({
+    apiKey: import.meta.env.VITE_NAME,
+  })
+
+
+  async function generateResponse(){
+    const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: `separate and complete the transcription doctor and patient conversation
+        transcription:${cumulativeTranscript}
+        `,
+    });
+    console.log(response.text);
+    setMessage(response.text)
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -319,7 +340,7 @@ const ParticleCircle = () => {
     }
   };
 
-  // Speech recognition setup
+  // Speech recognition setup - Modified to accumulate transcript
   const startListening = () => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -330,22 +351,38 @@ const ParticleCircle = () => {
 
       recognitionRef.current.onstart = () => {
         setIsListening(true);
+        setTranscript('Listening...');
         setupAudioAnalysis();
       };
 
       recognitionRef.current.onend = () => {
         setIsListening(false);
+        setTranscript('Click start to begin speech recognition...');
       };
 
       recognitionRef.current.onresult = (event) => {
-        let text = '';
+        let interimTranscript = '';
+        let finalTranscript = '';
+        
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          text += event.results[i][0].transcript;
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
         }
-        setTranscript(text);
+        
+        // Update cumulative transcript with final results
+        if (finalTranscript) {
+          setCumulativeTranscript(prev => prev + finalTranscript);
+        }
+        
+        // Show current interim result
+        setTranscript(cumulativeTranscript + finalTranscript + interimTranscript);
         
         // Voice command detection (still allow specific commands)
-        const lowerText = text.toLowerCase();
+        const lowerText = (finalTranscript + interimTranscript).toLowerCase();
         if (lowerText.includes('calm')) {
           particleModeRef.current = 'calm';
         } else if (lowerText.includes('dance')) {
@@ -377,12 +414,182 @@ const ParticleCircle = () => {
 
   const resetParticles = () => {
     setTranscript('Click start to begin speech recognition...');
+    setCumulativeTranscript('');
     particleModeRef.current = 'circle';
     particlesRef.current.forEach(p => p.reset());
   };
 
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setUploadedFile(file);
+    }
+  };
+
+  const handleFinalize = () => {
+    generateResponse();
+
+    setShowReceipt(true);
+  };
+
+  const closeReceipt = () => {
+    setShowReceipt(false);
+  };
+
+  // Generate current date and time
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    const date = now.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    const time = now.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    return { date, time };
+  };
+
+  const { date, time } = getCurrentDateTime();
+
   return (
     <div className="w-full h-screen bg-white flex flex-col overflow-hidden">
+      {/* Receipt Popup Modal */}
+      {showReceipt && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-green-100 rounded-full">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">Session Complete</h2>
+              </div>
+              <button
+                onClick={closeReceipt}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+    {/*----------------------------------------------------------------------- Receipt Content -------------------------------------------------------------------------*/}
+            <div className="p-6 space-y-6">
+              {/* Patient Information */}
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-3">
+                  <User className="w-5 h-5 text-blue-600" />
+                  <h3 className="font-semibold text-blue-800">Patient Information</h3>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Name:</span>
+                    <span className="font-medium">John Smith</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Patient ID:</span>
+                    <span className="font-medium">#PT-2024-001</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Age:</span>
+                    <span className="font-medium">45 years</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Session Details */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-3">
+                  <FileText className="w-5 h-5 text-gray-600" />
+                  <h3 className="font-semibold text-gray-800">Session Details</h3>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Session ID:</span>
+                    <span className="font-medium">#SES-2024-{Math.floor(Math.random() * 1000)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Duration:</span>
+                    <span className="font-medium">15 minutes</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Words Captured:</span>
+                    <span className="font-medium">{cumulativeTranscript.split(' ').filter(word => word.trim()).length}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Date and Time */}
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Calendar className="w-5 h-5 text-green-600" />
+                  <h3 className="font-semibold text-green-800">Session Time</h3>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Date:</span>
+                    <span className="font-medium">{date}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Time:</span>
+                    <span className="font-medium">{time}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Prescription Status */}
+              <div className="bg-purple-50 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-3">
+                  <FileText className="w-5 h-5 text-purple-600" />
+                  <h3 className="font-semibold text-purple-800">Prescription</h3>
+                </div>
+                <div className="text-sm">
+                  {uploadedFile ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Uploaded:</span>
+                      <span className="font-medium text-green-600">✓ {uploadedFile.name}</span>
+                    </div>
+                  ) : (
+                    <div className="text-gray-500">No prescription uploaded</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Transcript Preview */}
+              {cumulativeTranscript && (
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-blue-800 mb-2">Transcript Summary</h3>
+                  <div className="text-sm text-gray-700 max-h-24 overflow-y-auto">
+                    {message}
+                  </div>
+                </div>
+              )}
+
+              {/*----------------------------------------------------------------------- Receipt Content -------------------------------------------------------------------------*/}
+
+              {/* Action Buttons */}
+              <div className="flex space-x-3 pt-4">
+                <button
+                  onClick={() => window.print()}
+                  className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Print Receipt
+                </button>
+                <button
+                  onClick={closeReceipt}
+                  className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left side - Canvas */}
@@ -411,11 +618,12 @@ const ParticleCircle = () => {
 
         {/* Right Sidebar - Transcript */}
         <div className="w-80 bg-white border-l border-gray-200 p-4 flex flex-col space-y-5">
-          {/* Speech Transcript Section */}
+
+          {/* Final Transcript Section */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Speech Transcript</h3>
-            <div className="h-40 bg-gray-50 border border-gray-300 rounded-lg p-3 overflow-y-auto text-sm text-gray-700 shadow-inner">
-              {transcript || 'No speech detected yet.'}
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Final Transcript</h3>
+            <div className="h-32 bg-blue-50 border border-blue-300 rounded-lg p-3 overflow-y-auto text-sm text-gray-800 shadow-inner">
+              {cumulativeTranscript || 'Final transcript will appear here...'}
             </div>
           </div>
 
@@ -423,29 +631,34 @@ const ParticleCircle = () => {
           <div>
             <h6 className="text-lg text-center font-semibold text-gray-800 mb-2">Upload Prescription (optional)</h6>
             
-            <label className="w-full text-center  flex items-center justify-center px-4 py-3 border-2 border-dashed border-blue-400 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer transition-all duration-300">
+            <label className="w-full text-center flex items-center justify-center px-4 py-3 border-2 border-dashed border-blue-400 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer transition-all duration-300">
               <input
                 type="file"
                 accept="image/*,.pdf"
-                className="hidden "
-                
+                className="hidden"
+                onChange={handleFileUpload}
               />
-              Click to upload a file
+              {uploadedFile ? `Uploaded: ${uploadedFile.name}` : 'Click to upload a file'}
             </label>
 
-            {/* Optional: You can show processing or result below */}
-            
+            <button 
+              onClick={handleFinalize}
+              className="w-full mt-3 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium"
+            >
+              Finalize Session
+            </button>
           </div>
         </div>
       </div>
 
       {/* Control Panel - Segmented Control Style */}
-      <div className=" from-slate-800 via-slate-900 to-slate-800 border-slate-700 flex-shrink-0">
+      <div className="from-slate-800 via-slate-900 to-slate-800 border-slate-700 flex-shrink-0">
         <div className="px-8 py-16">
           
           {/* Segmented Button Control */}
-          <div className="flex pl-60" >
-            <div className="inline-flex  p-1">
+          <h3 className="pl-50">{transcript || 'No speech detected yet.'}</h3>
+          <div className="flex pl-60">
+            <div className="inline-flex p-1">
               {/* Stop Button - Left */}
               <button 
                 onClick={stopListening}

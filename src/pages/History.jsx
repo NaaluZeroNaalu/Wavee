@@ -1,8 +1,12 @@
+
 import React, { useState } from 'react';
 
 const HistoryPage = () => {
   const [expandedUser, setExpandedUser] = useState(null);
   const [activeTab, setActiveTab] = useState({});
+  
+
+  
 
   const historyData = [
     {
@@ -31,6 +35,7 @@ const HistoryPage = () => {
   };
 
   return (
+        <>
     <div className="min-h-screen bg-gray-100 p-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-2">
         Interaction History
@@ -45,7 +50,7 @@ const HistoryPage = () => {
             <div
               key={entry.id}
               className="bg-white border border-gray-300 rounded-xl shadow-md transition-all duration-300"
-            >
+              >
               {/* Header */}
               <button
                 onClick={() => toggleExpand(entry.id)}
@@ -99,6 +104,8 @@ const HistoryPage = () => {
         })}
       </div>
     </div>
+    
+    </>
   );
 };
 
