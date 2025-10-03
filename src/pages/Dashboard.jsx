@@ -7,6 +7,7 @@ import NCR from './NCR';
 import Checklist from './Checklist';
 import ParticleCircle from './test';
 import HistoryPage from './History';
+import OthersPage from './others';
 
 const Dashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -29,6 +30,12 @@ const Dashboard = () => {
          <HistoryPage />
           </>
         );
+      case 'others':
+        return (
+          <>
+         <OthersPage />
+          </>
+        );
       
       default:
         return null;
@@ -48,7 +55,7 @@ const Dashboard = () => {
             
             .sidebar {
           width: ${sidebarCollapsed ? '70px' : '250px'};
-          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+          background: #14A3C7;
           color: white;
           transition: width 0.3s ease;
           position: relative;
@@ -87,8 +94,8 @@ const Dashboard = () => {
       {/* Sidebar */}
       <div className="sidebar">
         <div className="sidebar-header" style={{ padding: '20px', display: 'flex', alignItems: 'center' }}>
-          <div className="sidebar-logo" style={{ marginRight: '10px' }}>W</div>
-          {!sidebarCollapsed && <div className="sidebar-title">WAVE INFRA</div>}
+          <div className="sidebar-logo" style={{ marginRight: '10px' }}>Paarava.AI</div>
+          
         </div>
 
         <div className="sidebar-menu">
@@ -108,7 +115,7 @@ const Dashboard = () => {
             </div>
             <div
               className={`menu-item ${activeTab === 'others' ? 'active' : ''}`}
-              onClick={() => setActiveTab('checklist')}
+              onClick={() => setActiveTab('others')}
               >
               Others
             </div>

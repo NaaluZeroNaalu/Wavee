@@ -8,25 +8,26 @@ function Login(){
 
   // Carousel data - replace with your actual images and content
   const carouselSlides = [
-    {
-      image: "https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      title: "Welcome to Our Platform",
-      subtitle: "Experience the Future",
-      description: "Join thousands of users who trust our secure and innovative platform for their daily needs."
-    },
-    {
-      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2015&q=80",
-      title: "Powerful Analytics",
-      subtitle: "Data-Driven Insights",
-      description: "Transform your business with comprehensive analytics and real-time reporting tools."
-    },
-    {
-      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80",
-      title: "Team Collaboration",
-      subtitle: "Work Together Seamlessly",
-      description: "Connect with your team and collaborate effectively with our integrated communication tools."
-    }
-  ];
+  {
+    image: "https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    title: "AI-Driven Doctor-Patient Interaction",
+    subtitle: "Effortless Conversations, Instant Summaries",
+    description: "Our AI captures every conversation between doctor and patient, automatically summarizing key details like name, mobile number, and prescriptions. No more manual note-taking!"
+  },
+  {
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2015&q=80",
+    title: "Instant Prescription Generation",
+    subtitle: "AI That Helps You Focus on Care",
+    description: "Our AI listens, analyzes, and generates prescriptions based on patient conversations, saving doctors valuable time while ensuring accuracy and efficiency."
+  },
+  {
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80",
+    title: "Seamless Patient Management",
+    subtitle: "Easy Access to Critical Information",
+    description: "Track and manage patient information with ease. Our platform helps doctors access detailed summaries, prescriptions, and contact information all in one place."
+  }
+];
+
 
   // Auto-advance carousel
   useEffect(() => {

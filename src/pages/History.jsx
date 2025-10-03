@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 
 const HistoryPage = () => {
   const [expandedUser, setExpandedUser] = useState(null);
   const [activeTab, setActiveTab] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
   
 
   
@@ -12,6 +12,7 @@ const HistoryPage = () => {
     {
       id: 1,
       name: 'John',
+      mobile: '9876543210',
       date: '2025-09-17 14:23',
       transcript: 'The patient reports chest pain and fatigue over the past week.',
       prescription: 'Paracetamol 500mg twice daily. ECG advised.',
@@ -19,6 +20,7 @@ const HistoryPage = () => {
     {
       id: 2,
       name: 'Jane',
+      mobile: '9123456789',
       date: '2025-09-16 10:45',
       transcript: 'Reports anxiety and insomnia.',
       prescription: 'Prescribed Diazepam 5mg once daily.',
@@ -34,6 +36,14 @@ const HistoryPage = () => {
     setActiveTab((prev) => ({ ...prev, [userId]: tab }));
   };
 
+  const filteredHistory = historyData.filter((entry) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      entry.name.toLowerCase().includes(searchLower) ||
+      entry.mobile.includes(searchTerm)
+    );
+  });
+
   return (
         <>
     <div className="min-h-screen bg-gray-100 p-8">
@@ -41,8 +51,19 @@ const HistoryPage = () => {
         Interaction History
       </h1>
 
+      {/* Search Bar */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search by name or mobile number..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+
       <div className="space-y-6">
-        {historyData.map((entry) => {
+        {filteredHistory.map((entry) => {
           const isExpanded = expandedUser === entry.id;
           const active = activeTab[entry.id] || 'transcript';
 
