@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Play, Square, RotateCcw, User, Stethoscope } from 'lucide-react';
+import { driver } from 'driver.js';
+import 'driver.js/dist/driver.css';
 
 const Simulation = () => {
   const canvasRef = useRef(null);
@@ -10,15 +12,19 @@ const Simulation = () => {
   const messagesEndRef = useRef(null);
   const audioIntervalRef = useRef(null);
   const barsRef = useRef([]);
+  const [isGuideActive, setIsGuideActive] = useState(false);
+  const guideDriverRef = useRef(null);
 
   const conversation = [
-    { speaker: 'patient', text: "Thank you, Doctor. I'll follow your advice." },
-    { speaker: 'doctor', text: "You're welcome. Take care and don't hesitate to call if you have concerns." },
-    { speaker: 'patient', text: "I appreciate your time. The instructions for medication were very clear." },
-    { speaker: 'doctor', text: "Excellent. Remember to schedule your follow-up in two weeks. Any new symptoms, contact us immediately." },
-    { speaker: 'patient', text: "I understand. I'll make sure to note everything down in my health journal." },
-    { speaker: 'doctor', text: "Perfect. A good record helps us track your progress. Keep well." },
-  ];
+{ speaker: "patient", text: "Good morning, Doctor. I've been having a fever, sore throat, and cough for three days." },
+{ speaker: "doctor", text: "Good morning. It sounds like a mild throat and chest infection. Let me prescribe you some medicines." },
+{ speaker: "doctor", text: "You’ll take Amoxicillin 500mg three times daily after meals — it’s an antibiotic to treat the infection." },
+{ speaker: "doctor", text: "For fever and body ache, take Paracetamol 650mg every 6 hours if needed." },
+{ speaker: "doctor", text: "And for your cough, take Bromhexine 8mg three times a day with warm water." },
+{ speaker: "patient", text: "Alright, Doctor. Should I follow any special precautions?" },
+{ speaker: "doctor", text: "Yes. Drink plenty of water, rest well, and avoid cold drinks, smoking, or alcohol during recovery." },
+{ speaker: "patient", text: "Got it, Doctor. Thank you for the clear instructions — I’ll follow them carefully." },
+];
 
   useEffect(() => {
     const barCount = 80;
@@ -38,7 +44,7 @@ const Simulation = () => {
       const dpr = window.devicePixelRatio || 1;
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
-      canvas.style.width = rect.width + 'px';
+      canvas.style.width = rect.width + 'px'; 
       canvas.style.height = rect.height + 'px';
       ctx.scale(dpr, dpr);
     };
@@ -143,7 +149,7 @@ const Simulation = () => {
 
   useEffect(() => {
     if (!isSimulating || currentMessageIndex >= conversation.length) {
-      if (currentMessageIndex >= conversation.length && isSimulating) {
+      if (currentMessageIndex >= conversation.length && isSimulating && !isGuideActive) {
         setIsSimulating(false);
         if (audioIntervalRef.current) {
           clearInterval(audioIntervalRef.current);
@@ -165,7 +171,7 @@ const Simulation = () => {
     return () => {
       clearTimeout(timer);
     };
-  }, [isSimulating, currentMessageIndex]);
+  }, [isSimulating, currentMessageIndex, isGuideActive]);
 
   const startSimulation = () => {
     setIsSimulating(true);
@@ -197,6 +203,109 @@ const Simulation = () => {
     });
   };
 
+  const startGuide = () => {
+    setIsGuideActive(true);
+    
+    const driverObj = driver({
+      showProgress: true,
+      showButtons: ['next', 'previous', 'close'],
+      steps: [
+        {
+          popover: {
+            title: 'Welcome to Recording Demo',
+            description: 'Let me guide you through the recording process. This demo will show you how the system captures and transcribes conversations.',
+            position: 'center'
+          }
+        },
+        {
+          element: '#start-recording-btn',
+          popover: {
+            title: 'Start Recording',
+            description: 'Click "Next" to start the recording. The system will begin capturing the conversation.',
+            position: 'top',
+            onNextClick: () => {
+              startSimulation();
+              setTimeout(() => driverObj.moveNext(), 500);
+            }
+          }
+        },
+        {
+          element: '#recording-status',
+          popover: {
+            title: 'Recording Active',
+            description: 'Notice the red indicator showing that recording is now active.',
+            position: 'bottom'
+          }
+        },
+        {
+          element: '#equalizer-canvas',
+          popover: {
+            title: 'Audio Equalizer',
+            description: 'The equalizer visualizes the audio input in real-time. When someone speaks, the bars animate to show the sound levels.',
+            position: 'center'
+          }
+        },
+        {
+          element: '#control-buttons',
+          popover: {
+            title: 'Control Buttons',
+            description: 'You can Stop the recording at any time or Reset to start over. These controls give you full management of the session.',
+            position: 'top'
+          }
+        },
+        {
+          element: '#conversation-panel',
+          popover: {
+            title: 'Live Transcript',
+            description: 'Watch as the conversation appears in real-time on the right side. The AI transcribes and displays the dialogue between doctor and patient.',
+            position: 'left'
+          }
+        },
+        {
+          element: '#conversation-messages',
+          popover: {
+            title: 'Conversation Messages',
+            description: 'Each message is labeled with the speaker (Doctor or Patient) and appears as the conversation progresses. The transcript updates automatically.',
+            position: 'left'
+          }
+        },
+        {
+          element: '#finalize-btn',
+          popover: {
+            title: 'Finalize Recording',
+            description: 'When the conversation is complete, click "Next" to finalize the recording and proceed to review the transcript and generate prescriptions.',
+            position: 'top',
+            onNextClick: () => {
+              driverObj.destroy();
+              setIsGuideActive(false);
+              window.location.href = "/Finalize";
+            }
+          }
+        }
+      ],
+      onDestroyStarted: () => {
+        if (!driverObj.isLastStep()) {
+          setIsGuideActive(false);
+          stopSimulation();
+          resetSimulation();
+        }
+        driverObj.destroy();
+      }
+    });
+
+    guideDriverRef.current = driverObj;
+    driverObj.drive();
+  };
+
+  // Auto-start guide when component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startGuide();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     return () => {
       if (audioIntervalRef.current) {
@@ -207,90 +316,92 @@ const Simulation = () => {
 
   return (
     <div className="w-full h-screen bg-white flex flex-col overflow-hidden">
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Left side - Equalizer */}
-        <div className="flex-1 relative flex flex-col bg-white">
-          <div className="absolute top-6 left-6 flex items-center space-x-2 bg-white px-3 py-2 rounded-md shadow-sm border border-gray-200">
+        <div className="flex-1 relative flex flex-col bg-white min-h-[50vh] lg:min-h-0">
+          <div id="recording-status" className="absolute top-3 left-3 lg:top-6 lg:left-6 flex items-center space-x-2 bg-white px-2 py-1.5 lg:px-3 lg:py-2 rounded-md shadow-sm border border-gray-200 z-10">
             <div className={`w-2 h-2 rounded-full ${isSimulating ? 'bg-red-500' : 'bg-gray-400'}`}></div>
             <span className="text-xs font-medium text-gray-600">
               {isSimulating ? 'Recording' : 'Idle'}
             </span>
           </div>
           
-          <div className="flex-1 flex items-center justify-center px-12">
+          <div id="equalizer-canvas" className="flex-1 flex items-center justify-center px-4 lg:px-12">
             <canvas ref={canvasRef} className="w-full h-full" />
           </div>
 
           {/* Control Panel */}
-          <div className="bg-white border-t border-gray-200 px-8 py-6">
-            <div className="flex justify-center items-center space-x-3">
+          <div id="control-buttons" className="bg-white border-t border-gray-200 px-4 py-3 lg:px-8 lg:py-6">
+            <div className="flex justify-center items-center space-x-2 lg:space-x-3">
               <button
                 onClick={stopSimulation}
-                disabled={!isSimulating}
-                className={`flex items-center justify-center px-6 py-2.5 rounded-md font-medium transition-all duration-200 border ${
+                disabled={!isSimulating || isGuideActive}
+                className={`flex items-center justify-center px-3 py-2 lg:px-6 lg:py-2.5 rounded-md font-medium transition-all duration-200 border ${
                   !isSimulating
                     ? 'bg-white text-gray-400 border-gray-300 cursor-not-allowed'
                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                 }`}
               >
-                <Square className="w-4 h-4 mr-2" />
-                <span className="text-sm">Stop</span>
+                <Square className="w-4 h-4 lg:mr-2" />
+                <span className="text-sm hidden lg:inline">Stop</span>
               </button>
               <button
+                id="start-recording-btn"
                 onClick={startSimulation}
                 disabled={isSimulating}
-                className={`flex items-center justify-center px-6 py-2.5 rounded-md font-medium transition-all duration-200 ${
+                className={`flex items-center justify-center px-4 py-2 lg:px-6 lg:py-2.5 rounded-md font-medium transition-all duration-200 ${
                   isSimulating
                     ? 'bg-teal-500 text-white cursor-not-allowed'
                     : 'bg-teal-500 text-white hover:bg-teal-600'
                 }`}
               >
-                <Play className="w-4 h-4 mr-2 fill-white" />
-                <span className="text-sm">Start Recording</span>
+                <Play className="w-4 h-4 lg:mr-2 fill-white" />
+                <span className="text-sm">Start</span>
               </button>
               <button
                 onClick={resetSimulation}
-                className="flex items-center justify-center px-6 py-2.5 rounded-md font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-all duration-200"
+                disabled={isGuideActive}
+                className="flex items-center justify-center px-3 py-2 lg:px-6 lg:py-2.5 rounded-md font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-all duration-200"
               >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                <span className="text-sm">Reset</span>
+                <RotateCcw className="w-4 h-4 lg:mr-2" />
+                <span className="text-sm hidden lg:inline">Reset</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Right Sidebar - Conversation */}
-        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
-          <div className="p-5 bg-white border-b border-gray-200">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-teal-50 rounded-lg">
-                <Stethoscope className="w-5 h-5 text-teal-600" />
+        <div id="conversation-panel" className="w-full lg:w-96 bg-white border-t lg:border-t-0 lg:border-l border-gray-200 flex flex-col max-h-[50vh] lg:max-h-none">
+          <div className="p-3 lg:p-5 bg-white border-b border-gray-200">
+            <div className="flex items-center space-x-2 lg:space-x-3">
+              <div className="p-1.5 lg:p-2 bg-teal-50 rounded-lg">
+                <Stethoscope className="w-4 h-4 lg:w-5 lg:h-5 text-teal-600" />
               </div>
               <div>
-                <h2 className="text-base font-semibold text-gray-900">Consultation Transcript</h2>
+                <h2 className="text-sm lg:text-base font-semibold text-gray-900">Consultation Transcript</h2>
                 <p className="text-xs text-gray-500 mt-0.5">Patient-Doctor Conversation</p>
               </div>
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-white">
+          <div id="conversation-messages" className="flex-1 overflow-y-auto p-3 lg:p-5 space-y-3 lg:space-y-5 bg-white">
             {messages.map((msg, index) => (
               <div key={index} className="animate-slideIn">
-                <div className="flex items-start space-x-2.5">
-                  <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                <div className="flex items-start space-x-2 lg:space-x-2.5">
+                  <div className={`flex-shrink-0 w-5 h-5 lg:w-6 lg:h-6 rounded-full flex items-center justify-center ${
                     msg.speaker === 'doctor' ? 'bg-teal-500' : 'bg-gray-400'
                   }`}>
                     {msg.speaker === 'doctor' ? (
-                      <Stethoscope className="w-3.5 h-3.5 text-white" />
+                      <Stethoscope className="w-3 lg:w-3.5 h-3 lg:h-3.5 text-white" />
                     ) : (
-                      <User className="w-3.5 h-3.5 text-white" />
+                      <User className="w-3 lg:w-3.5 h-3 lg:h-3.5 text-white" />
                     )}
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-semibold mb-1 text-gray-900 uppercase tracking-wide">
                       {msg.speaker === 'doctor' ? 'DOCTOR' : 'PATIENT'}
                     </p>
-                    <p className="text-sm leading-relaxed text-gray-700">{msg.text}</p>
+                    <p className="text-xs lg:text-sm leading-relaxed text-gray-700">{msg.text}</p>
                   </div>
                 </div>
               </div>
@@ -299,8 +410,16 @@ const Simulation = () => {
           </div>
 
           {/* Finalize Button */}
-          <div className="p-5 border-t border-gray-200">
-            <button onClick={ ()=>{ window.location.href = "/Finalize" } } className="w-full flex items-center justify-center px-4 py-3 rounded-md font-medium text-white bg-teal-500 hover:bg-teal-600 transition-all duration-200">
+          <div className="p-3 lg:p-5 border-t border-gray-200">
+            <button 
+              id="finalize-btn"
+              onClick={() => { 
+                if (!isGuideActive) {
+                  window.location.href = "/Finalize";
+                }
+              }}
+              className="w-full flex items-center justify-center px-4 py-2.5 lg:py-3 rounded-md font-medium text-white bg-teal-500 hover:bg-teal-600 transition-all duration-200"
+            >
               <Play className="w-4 h-4 mr-2 fill-white" />
               <span className="text-sm">Finalize</span>
             </button>
